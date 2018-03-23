@@ -1,11 +1,8 @@
 package anchor.service.reg;
 
-import com.sun.mail.imap.IMAPMessage;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.mail.Authenticator;
 import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
@@ -56,10 +53,10 @@ public class Mailer {
             
             msg.addHeader("Content-type", "text/HTML; charset=UTF-8");
             msg.addHeader("format", "flowed");
-            msg.addHeader("Content-Transfer-Encoding", "8bit");
+            //msg.addHeader("Content-Transfer-Encoding", "8bit");
             msg.setFrom(new InternetAddress(this.user,"no-reply-Anchor-Services"));
             msg.setSubject(subject);
-            msg.setText(text);
+            msg.setContent(text,"text/html; charset=utf-8");
             msg.setSentDate(new Date());
             
             msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient, false));

@@ -11,7 +11,7 @@ package anchor.service.reg;
  */
 public class EmailConfig {
     public static String USER = "leoelf@libero.it";
-    public static String PASSWORD = "";
+    public static String PASSWORD = "mt173711l";
     public static String SMTP_SERVER = "smtp.libero.it";
     public static int SSL_PORT = 465;
 }

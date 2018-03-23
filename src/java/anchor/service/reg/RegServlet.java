@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +19,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.LogManager;
@@ -75,7 +77,7 @@ public class RegServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processPostRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        //response.setContentType("application/json");
+        response.setContentType("application/json");
         response.setContentType("text/html");
         HashMap<String, Object> user = new HashMap<>();
         //try to get user attributes
@@ -110,18 +112,17 @@ public class RegServlet extends HttpServlet {
             while ((line = rd.readLine()) != null) {
                 result.append(line);
             }
-            
+
             JSONParser parser = new JSONParser();
-            JSONObject jsonResp = (JSONObject)parser.parse(result.toString());
-            
+            JSONObject jsonResp = (JSONObject) parser.parse(result.toString());
+
             long respCode = (long) jsonResp.get("code");
             System.out.println(jsonResp.get("code"));
-            if(respCode==200){
-                sendEmail(name, email, token);
-            }   
-            
-            //sendEmail(name, email, token);
+            if (respCode == 200) {
+                sendEmail(username, name, email, token);
+            }
 
+            //sendEmail(name, email, token);
             try (PrintWriter out = response.getWriter()) {
                 System.out.println(name);
                 System.out.println(result);
@@ -138,14 +139,35 @@ public class RegServlet extends HttpServlet {
         return UUID.randomUUID().toString();
     }
 
-    private void sendEmail(String name, String address, String token){
+    private void sendEmail(String username, String name, String address, String token) throws URISyntaxException {
         final String subject = "ANCHOR reg Service";
-        final String linkAct = "";
-        final String text = "Dear "+name+",\n"
-        + "Thankyou for your registration to our services. This is your activation mail to use Anchor services. Please, follow the link below or use this token activator.\n"
-                + token;
+        NameValuePair usernameParam = new BasicNameValuePair("username", username);
+        NameValuePair tokenParam = new BasicNameValuePair("token", token);
+        List<NameValuePair> nvps = new ArrayList<>();
+        nvps.add(usernameParam);
+        nvps.add(tokenParam);
+        final String serviceURI = "http://localhost:8080/anchor_service_registration/Activation";
+        URIBuilder activationURI = new URIBuilder(serviceURI).setParameters(nvps);
+        final String text = "Dear " + name + ",\n"
+                + "Thankyou for your registration to our services. This is your activation mail to use Anchor services. Please, follow the link below or use this token activator.<br>"
+                + "TOKEN:"
+                + token + ""
+                + "URL:\n"
+                + "< href =\"" + activationURI + "\">" + activationURI + "</a>";
+
+        final String HTMLText = "<html><body>"
+                + "<p>Dear " + name + ",</p>"
+                + "<p>Thankyou for your registration to our services. This is your activation mail to use Anchor services. Please, follow the link below or use this token activator.<br>"
+                + "TOKEN:"
+                + token + "<br>"
+                + "URL:<br>"
+                + "<a href =\"" + activationURI + "\">" + activationURI + "</a>"
+                + "</p>"
+                + "</body>"
+                + "</html>";
+
         Mailer mailer = new Mailer();
-        mailer.send(address, subject, text);
+        mailer.send(address, subject, HTMLText);
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
