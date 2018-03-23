@@ -9,6 +9,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -16,14 +19,20 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 /**
  *
@@ -82,32 +91,55 @@ public class Activation extends HttpServlet {
             }
             //BODY JSON RESP
             JSONParser parser = new JSONParser();
+            System.out.println(result.toString());
             jsoResp = (JSONObject) parser.parse(result.toString());
-            JSONArray jsArray = (JSONArray)jsoResp.get("res");
-//            System.out.println(jsoResp.size());
-            if (token.equals( ((JSONObject)jsArray.get(0)).get("token"))) {
+            JSONArray jsArray = (JSONArray) jsoResp.get("res");
+            //System.out.println(jsoResp.size());
+            if (token.equals(((JSONObject) jsArray.get(0)).get("token"))) {
                 //valid token so...
+                int id = Integer.parseInt(((JSONObject) jsArray.get(0)).get("id").toString());
+                jsoResp = setUserActive(id);
                 
-                jsoResp = new JSONObject();
-                jsoResp.put("code", 200);
-                jsoResp.put("text", "user activated");
-            }else{
+//                jsoResp = new JSONObject();
+//                jsoResp.put("code", 200);
+//                jsoResp.put("text", "user activated");
+            } else {
                 jsoResp = new JSONObject();
                 jsoResp.put("code", 403);
                 jsoResp.put("text", "Forbidden, invalid token");
             }
 
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            logger.error(e);
         }
         try (PrintWriter out = response.getWriter()) {
             out.print(jsoResp);
         }
     }
-    
-    private void setUserActive(){
-        //Edit user field with a PUT call to DB endpoint
-        
+
+    private JSONObject setUserActive(int id) throws UnsupportedEncodingException, IOException, ParseException {
+        final String queryURI = "http://localhost/db/user/" + id;
+        HttpClient httpclient = HttpClients.createDefault();
+        HttpPut httpPut = new HttpPut(queryURI);
+        List<NameValuePair> params = new ArrayList<>(2);
+        int active = 1;
+        String token = "b";
+        params.add(new BasicNameValuePair("active", Integer.toString(active)));
+        params.add(new BasicNameValuePair("token", token));
+        httpPut.setEntity(new UrlEncodedFormEntity(params));
+        HttpResponse httpResp = httpclient.execute(httpPut);
+        BufferedReader rd = new BufferedReader(
+                    new InputStreamReader(httpResp.getEntity().getContent()));
+        StringBuilder result = new StringBuilder();
+        String line = new String();
+        while ((line = rd.readLine()) != null) {
+            result.append(line);
+        }
+        System.out.println(result);
+        JSONParser parser = new JSONParser();
+        JSONObject jsonResp = (JSONObject) parser.parse(result.toString());
+        System.out.println(jsonResp);
+        return jsonResp;
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
