@@ -10,26 +10,19 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
@@ -54,7 +47,7 @@ public class Activation extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+    protected void processGetRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("application/json;charset=UTF-8");
         final String usersTable = "user";
@@ -67,7 +60,6 @@ public class Activation extends HttpServlet {
             final String token = request.getParameter("token");
             final String username = request.getParameter("username");
             final String queryURI = "http://localhost/db/" + usersTable + "/username/" + username;
-//            final String queryURI ="http://localhost/db/user/username/lionell":
             System.out.println(queryURI);
 
             //connection to DB API REST
@@ -94,17 +86,16 @@ public class Activation extends HttpServlet {
             }
             //BODY JSON RESP
             JSONParser parser = new JSONParser();
-            System.out.println("Result: "+result.toString());
+            System.out.println("Result: " + result.toString());
             jsoResp = (JSONObject) parser.parse(result.toString());
             JSONArray jsArray = (JSONArray) jsoResp.get("res");
             if (token.equals(((JSONObject) jsArray.get(0)).get("token"))) {
                 //valid token so...
                 int id = Integer.parseInt(((JSONObject) jsArray.get(0)).get("id").toString());
                 jsoResp = setUserActive(id);
-                
-                jsoResp = new JSONObject();
-                jsoResp.put("code", 200);
-                jsoResp.put("text", "user activated");
+//                jsoResp = new JSONObject();
+//                jsoResp.put("code", 200);
+//                jsoResp.put("text", "user activated");
             } else {
                 jsoResp = new JSONObject();
                 jsoResp.put("code", 403);
@@ -130,7 +121,7 @@ public class Activation extends HttpServlet {
         jsonParams.put("token", token);
         StringEntity jsonData = new StringEntity(jsonParams.toJSONString());
         httpPut.setEntity(jsonData);
-        System.out.println("PARAMS: "+jsonData);
+        System.out.println("PARAMS: " + jsonData);
         HttpResponse httpResp = httpclient.execute(httpPut);
         BufferedReader rd = new BufferedReader(new InputStreamReader(httpResp.getEntity().getContent()));
         StringBuilder result = new StringBuilder();
@@ -157,7 +148,7 @@ public class Activation extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        processGetRequest(request, response);
     }
 
     /**
