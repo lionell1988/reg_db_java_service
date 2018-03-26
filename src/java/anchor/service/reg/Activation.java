@@ -18,12 +18,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
@@ -91,18 +94,17 @@ public class Activation extends HttpServlet {
             }
             //BODY JSON RESP
             JSONParser parser = new JSONParser();
-            System.out.println(result.toString());
+            System.out.println("Result: "+result.toString());
             jsoResp = (JSONObject) parser.parse(result.toString());
             JSONArray jsArray = (JSONArray) jsoResp.get("res");
-            //System.out.println(jsoResp.size());
             if (token.equals(((JSONObject) jsArray.get(0)).get("token"))) {
                 //valid token so...
                 int id = Integer.parseInt(((JSONObject) jsArray.get(0)).get("id").toString());
                 jsoResp = setUserActive(id);
                 
-//                jsoResp = new JSONObject();
-//                jsoResp.put("code", 200);
-//                jsoResp.put("text", "user activated");
+                jsoResp = new JSONObject();
+                jsoResp.put("code", 200);
+                jsoResp.put("text", "user activated");
             } else {
                 jsoResp = new JSONObject();
                 jsoResp.put("code", 403);
@@ -119,26 +121,27 @@ public class Activation extends HttpServlet {
 
     private JSONObject setUserActive(int id) throws UnsupportedEncodingException, IOException, ParseException {
         final String queryURI = "http://localhost/db/user/" + id;
-        HttpClient httpclient = HttpClients.createDefault();
+        CloseableHttpClient httpclient = HttpClients.createDefault();
         HttpPut httpPut = new HttpPut(queryURI);
-        List<NameValuePair> params = new ArrayList<>(2);
         int active = 1;
-        String token = "b";
-        params.add(new BasicNameValuePair("active", Integer.toString(active)));
-        params.add(new BasicNameValuePair("token", token));
-        httpPut.setEntity(new UrlEncodedFormEntity(params));
+        String token = "brav";
+        JSONObject jsonParams = new JSONObject();
+        jsonParams.put("active", active);
+        jsonParams.put("token", token);
+        StringEntity jsonData = new StringEntity(jsonParams.toJSONString());
+        httpPut.setEntity(jsonData);
+        System.out.println("PARAMS: "+jsonData);
         HttpResponse httpResp = httpclient.execute(httpPut);
-        BufferedReader rd = new BufferedReader(
-                    new InputStreamReader(httpResp.getEntity().getContent()));
+        BufferedReader rd = new BufferedReader(new InputStreamReader(httpResp.getEntity().getContent()));
         StringBuilder result = new StringBuilder();
         String line = new String();
         while ((line = rd.readLine()) != null) {
             result.append(line);
         }
-        System.out.println(result);
+//        System.out.println("Update query res: "+result);
         JSONParser parser = new JSONParser();
         JSONObject jsonResp = (JSONObject) parser.parse(result.toString());
-        System.out.println(jsonResp);
+//        System.out.println(jsonResp);
         return jsonResp;
     }
 
