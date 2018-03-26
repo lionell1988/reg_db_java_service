@@ -78,7 +78,7 @@ public class RegServlet extends HttpServlet {
      */
     protected void processPostRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("application/json");
-        response.setContentType("text/html");
+//        response.setContentType("text/html");
         HashMap<String, Object> user = new HashMap<>();
         //try to get user attributes
         try {
