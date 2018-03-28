@@ -93,6 +93,12 @@ public class Activation extends HttpServlet {
                 //valid token so...
                 int id = Integer.parseInt(((JSONObject) jsArray.get(0)).get("id").toString());
                 jsoResp = setUserActive(id);
+                final int respCode = Integer.parseInt(jsoResp.get("code").toString());
+                final String respTxt = jsoResp.get("txt").toString();
+                jsoResp = new JSONObject();
+                jsoResp.put("code", respCode);
+                jsoResp.put("text", respTxt);
+                
 //                jsoResp = new JSONObject();
 //                jsoResp.put("code", 200);
 //                jsoResp.put("text", "user activated");
