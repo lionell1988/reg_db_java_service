@@ -149,7 +149,7 @@ public class RegServlet extends HttpServlet {
         List<NameValuePair> nvps = new ArrayList<>();
         nvps.add(usernameParam);
         nvps.add(tokenParam);
-        final String serviceURI = ServerConfig.ANCOR_SERVICE_REGISTRATION_ADDRESS+"/anchor_service_registration/Activation";
+        final String serviceURI = ServerConfig.ANCHOR_PUBLIC_API_URL+"/anchor_service_registration/Activation";
         URIBuilder activationURI = new URIBuilder(serviceURI).setParameters(nvps);
         final String text = "Dear " + name + ",\n"
                 + "Thankyou for your registration to our services. This is your activation mail to use Anchor services. Please, follow the link below or use this token activator.<br>"
