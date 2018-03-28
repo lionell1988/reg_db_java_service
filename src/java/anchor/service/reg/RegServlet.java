@@ -37,7 +37,7 @@ public class RegServlet extends HttpServlet {
     private final Logger logger = LogManager.getLogger(RegServlet.class);
 
     /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * Processes requests for both HTTP <code>GET</code>
      * methods.
      *
      * @param request servlet request
@@ -45,7 +45,7 @@ public class RegServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+    protected void processGetRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // response.setContentType("application/json;charset=UTF-8");
         response.setContentType("application/json");
@@ -78,15 +78,18 @@ public class RegServlet extends HttpServlet {
      */
     protected void processPostRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("application/json");
+//        System.out.println(request.getHeader("Content-Type"));
 //        response.setContentType("text/html");
         HashMap<String, Object> user = new HashMap<>();
         //try to get user attributes
         try {
-            final String DBEndPointURL = "http://localhost/db/user/";
+            final String DBEndPointURL = ServerConfig.DB_ENDPOINT_ADDRESS+"/user/";
             HttpClient httpclient = HttpClients.createDefault();
             HttpPost httpPost = new HttpPost(DBEndPointURL);
             List<NameValuePair> params = new ArrayList<>(2);
-            String name = request.getParameterValues("name")[0];
+//            String name = request.getParameterValues("name")[0]; 
+            String name = request.getParameter("name");
+            System.out.println(name);
             String surname = request.getParameterValues("surname")[0];
             String username = request.getParameterValues("username")[0];
             String email = request.getParameterValues("email")[0];
@@ -146,7 +149,7 @@ public class RegServlet extends HttpServlet {
         List<NameValuePair> nvps = new ArrayList<>();
         nvps.add(usernameParam);
         nvps.add(tokenParam);
-        final String serviceURI = "http://localhost:8080/anchor_service_registration/Activation";
+        final String serviceURI = ServerConfig.ANCOR_SERVICE_REGISTRATION_ADDRESS+"/anchor_service_registration/Activation";
         URIBuilder activationURI = new URIBuilder(serviceURI).setParameters(nvps);
         final String text = "Dear " + name + ",\n"
                 + "Thankyou for your registration to our services. This is your activation mail to use Anchor services. Please, follow the link below or use this token activator.<br>"
@@ -182,7 +185,7 @@ public class RegServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        processGetRequest(request, response);
     }
 
     /**

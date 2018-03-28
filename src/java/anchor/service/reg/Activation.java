@@ -59,7 +59,7 @@ public class Activation extends HttpServlet {
         try {
             final String token = request.getParameter("token");
             final String username = request.getParameter("username");
-            final String queryURI = "http://localhost/db/" + usersTable + "/username/" + username;
+            final String queryURI = ServerConfig.DB_ENDPOINT_ADDRESS+"/" + usersTable + "/username/" + username;
             System.out.println(queryURI);
 
             //connection to DB API REST
@@ -111,7 +111,7 @@ public class Activation extends HttpServlet {
     }
 
     private JSONObject setUserActive(int id) throws UnsupportedEncodingException, IOException, ParseException {
-        final String queryURI = "http://localhost/db/user/" + id;
+        final String queryURI = ServerConfig.DB_ENDPOINT_ADDRESS+"/user/" + id;
         CloseableHttpClient httpclient = HttpClients.createDefault();
         HttpPut httpPut = new HttpPut(queryURI);
         int active = 1;
